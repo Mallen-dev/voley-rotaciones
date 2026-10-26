@@ -14,19 +14,15 @@ export default function Court({
   return (
     <div className={`court-wrap court-${size}`}>
       <div className="net" aria-hidden="true">
-        <span className="post">
-          <span className="antenna" />
-        </span>
+        <span className="post" />
         <span className="net-body">
-          <span className="tape">
-            <span className="net-tag">RED</span>
-          </span>
+          <span className="antenna antenna-left" />
+          <span className="antenna antenna-right" />
+          <span className="tape" />
           <span className="mesh" />
           <span className="tape tape-low" />
         </span>
-        <span className="post">
-          <span className="antenna" />
-        </span>
+        <span className="post" />
       </div>
       <div
         className="court"
