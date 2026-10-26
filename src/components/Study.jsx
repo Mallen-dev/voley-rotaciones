@@ -1,8 +1,8 @@
 import Court from "./Court";
 import TopBar from "./TopBar";
-import { ROTATIONS } from "../data/rotations";
+import { tokensFor } from "../data/rotations";
 
-export default function Study({ onBack, onHelp }) {
+export default function Study({ rotations, onBack, onHelp }) {
   return (
     <main className="screen study">
       <TopBar title="Las 6 rotaciones" onBack={onBack} onHelp={onHelp} />
@@ -11,9 +11,9 @@ export default function Study({ onBack, onHelp }) {
         y L el líbero, atrás.
       </p>
       <div className="study-grid">
-        {ROTATIONS.map((rotation) => (
+        {rotations.map((rotation) => (
           <article key={rotation.id} className="study-card">
-            <Court slots={rotation.slots} setter={rotation.setter} markSetter size="mini" />
+            <Court tokens={tokensFor(rotation)} size="mini" />
             <div className="study-meta">
               <strong>Rotación {rotation.id}</strong>
               <span>

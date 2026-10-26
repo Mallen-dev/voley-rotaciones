@@ -1,5 +1,5 @@
 import Court from "./Court";
-import { ROTATIONS } from "../data/rotations";
+import { tokensFor } from "../data/rotations";
 
 function Ball() {
   return (
@@ -12,8 +12,8 @@ function Ball() {
   );
 }
 
-export default function Home({ onTrain, onHard, onStudy, onHelp }) {
-  const sample = ROTATIONS[0];
+export default function Home({ rotation, custom, onTrain, onHard, onStudy, onAdmin, onHelp }) {
+  const sample = rotation;
 
   return (
     <main className="screen home">
@@ -34,11 +34,13 @@ export default function Home({ onTrain, onHard, onStudy, onHelp }) {
         </header>
 
         <div className="home-court">
-          <Court slots={sample.slots} setter={sample.setter} markSetter size="hero" />
+          <Court tokens={tokensFor(sample)} size="hero" />
           <p className="court-caption">
-            Rotación 1 · coloca <strong>A1</strong>
+            Rotación 1 · coloca <strong>{sample.setter}</strong>
           </p>
-          <p className="court-note">Red arriba. Delantero junto a la red. Trasero detrás.</p>
+          <p className="court-note">
+            {custom ? "Estás usando las rotaciones del modo admin." : "Red arriba. La línea de 3 m separa las dos filas."}
+          </p>
         </div>
 
         <div className="home-actions">
@@ -54,6 +56,9 @@ export default function Home({ onTrain, onHard, onStudy, onHelp }) {
           </button>
           <button type="button" className="btn btn-ghost wide" onClick={onStudy}>
             Ver las 6 rotaciones
+          </button>
+          <button type="button" className="btn btn-quiet wide" onClick={onAdmin}>
+            Admin · definir las 6
           </button>
         </div>
       </div>

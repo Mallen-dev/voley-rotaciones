@@ -1,35 +1,35 @@
-export const ROLE_IDS = ["A1", "A2", "C", "L", "R1", "R2"];
+export const ROLE_IDS = ["A1", "A2", "C", "L", "RD", "RT"];
 
 export const ROLES = {
   A1: {
     id: "A1",
     name: "Armador 1",
-    hint: "Coloca en las rotaciones 1, 5 y 6",
+    hint: "Coloca cuando está delante",
   },
   A2: {
     id: "A2",
     name: "Armador 2",
-    hint: "Coloca en las rotaciones 2, 3 y 4",
+    hint: "Coloca cuando sube a la red",
   },
   C: {
     id: "C",
     name: "Central",
-    hint: "Siempre en red, en recepción",
+    hint: "El central de la red",
   },
   L: {
     id: "L",
     name: "Líbero",
-    hint: "Siempre atrás, en el sitio del otro central",
+    hint: "Entra por el central de atrás",
   },
-  R1: {
-    id: "R1",
-    name: "Receptor 1",
-    hint: "Entra por banda",
+  RD: {
+    id: "RD",
+    name: "Receptor delantero",
+    hint: "Receptor que sale delante",
   },
-  R2: {
-    id: "R2",
-    name: "Receptor 2",
-    hint: "Entra por la otra banda",
+  RT: {
+    id: "RT",
+    name: "Receptor trasero",
+    hint: "Receptor que sale atrás",
   },
 };
 
@@ -53,35 +53,52 @@ export const ZONE_CENTER = {
   z1: { x: 83, y: 70 },
 };
 
+const RAW_ROTATIONS = [
+  { id: 1, setter: "A1", slots: { z4: "RD", z3: "C", z2: "A1", z5: "A2", z6: "L", z1: "RT" } },
+  { id: 2, setter: "A2", slots: { z4: "A2", z3: "RD", z2: "C", z5: "L", z6: "RT", z1: "A1" } },
+  { id: 3, setter: "A2", slots: { z4: "C", z3: "A2", z2: "RD", z5: "RT", z6: "A1", z1: "L" } },
+  { id: 4, setter: "A2", slots: { z4: "RT", z3: "C", z2: "A2", z5: "A1", z6: "L", z1: "RD" } },
+  { id: 5, setter: "A1", slots: { z4: "A1", z3: "RT", z2: "C", z5: "L", z6: "RD", z1: "A2" } },
+  { id: 6, setter: "A1", slots: { z4: "C", z3: "A1", z2: "RT", z5: "RD", z6: "A2", z1: "L" } },
+];
+
 export function zoneAt(x, y) {
   const column = x < 100 / 3 ? 0 : x < 200 / 3 ? 1 : 2;
   const row = y < 37.5 ? ["z4", "z3", "z2"] : ["z5", "z6", "z1"];
   return row[column];
 }
 
-export function slotsToTokens(slots, setter) {
-  return ZONE_ORDER.map((zone) => ({
-    id: `${zone}-${slots[zone]}`,
-    role: slots[zone],
-    x: ZONE_CENTER[zone].x,
-    y: ZONE_CENTER[zone].y,
-    setter: slots[zone] === setter,
+export function deriveSetter(positions) {
+  const setters = ["A1", "A2"].filter((id) => positions[id]);
+  const front = setters.filter((id) => positions[id].y < 37.5);
+  const pool = front.length ? front : setters;
+  return pool.sort((a, b) => positions[a].y - positions[b].y)[0] || "A1";
+}
+
+export function rotationFromSlots(raw) {
+  const positions = {};
+  for (const zone of ZONE_ORDER) {
+    positions[raw.slots[zone]] = { ...ZONE_CENTER[zone] };
+  }
+  return { id: raw.id, setter: raw.setter, positions };
+}
+
+export const DEFAULT_ROTATIONS = RAW_ROTATIONS.map(rotationFromSlots);
+
+export function tokensFor(rotation) {
+  return ROLE_IDS.map((id) => ({
+    id: `${rotation.id}-${id}`,
+    role: id,
+    x: rotation.positions[id].x,
+    y: rotation.positions[id].y,
+    setter: id === rotation.setter,
   }));
 }
 
-export const FRONT_ZONES = new Set(["z4", "z3", "z2"]);
-
-export const ROTATIONS = [
-  { id: 1, setter: "A1", slots: { z4: "R1", z3: "C", z2: "A1", z5: "A2", z6: "L", z1: "R2" } },
-  { id: 2, setter: "A2", slots: { z4: "A2", z3: "R1", z2: "C", z5: "L", z6: "R2", z1: "A1" } },
-  { id: 3, setter: "A2", slots: { z4: "C", z3: "A2", z2: "R1", z5: "R2", z6: "A1", z1: "L" } },
-  { id: 4, setter: "A2", slots: { z4: "R2", z3: "C", z2: "A2", z5: "A1", z6: "L", z1: "R1" } },
-  { id: 5, setter: "A1", slots: { z4: "A1", z3: "R2", z2: "C", z5: "L", z6: "R1", z1: "A2" } },
-  { id: 6, setter: "A1", slots: { z4: "C", z3: "A1", z2: "R2", z5: "R1", z6: "A2", z1: "L" } },
-];
-
 export function zoneOf(rotation, role) {
-  return ZONE_ORDER.find((zone) => rotation.slots[zone] === role) ?? null;
+  const point = rotation.positions?.[role];
+  if (!point) return null;
+  return zoneAt(point.x, point.y);
 }
 
 export function explainRotation(rotation) {
@@ -113,6 +130,15 @@ export function explainRole(rotation, role) {
   return `En la rotación ${rotation.id}, ${name} está ${zone}. Coloca ${rotation.setter}.`;
 }
 
-export function isFront(zone) {
-  return FRONT_ZONES.has(zone);
+export function readCourtPoint(clientX, clientY) {
+  const court = document.querySelector("[data-court='true']");
+  if (!court) return null;
+  const rect = court.getBoundingClientRect();
+  const inside =
+    clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom;
+  if (!inside) return null;
+  return {
+    x: Math.min(92, Math.max(8, ((clientX - rect.left) / rect.width) * 100)),
+    y: Math.min(90, Math.max(10, ((clientY - rect.top) / rect.height) * 100)),
+  };
 }

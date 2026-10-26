@@ -35,7 +35,7 @@ export default function HelpSheet({ onClose }) {
         <h3>Recepción</h3>
         <p>
           En recepción siempre se ve un central (C) delante y el líbero (L) en el sitio del
-          central de atrás. R1 y R2 son los receptores.
+          central de atrás. RD es el receptor delantero y RT el receptor trasero.
         </p>
         <p>
           Esto es recepción: saca el otro equipo. La fila trasera no es el saque.

@@ -210,8 +210,8 @@ button { cursor: pointer; }
 .chip-A2 { --role: #ff8a1e; --ink: #2a1200; }
 .chip-C { --role: #ff4d4d; --ink: #2a0606; }
 .chip-L { --role: #3dffb0; --ink: #04281a; }
-.chip-R1 { --role: #7dd3fc; --ink: #042033; }
-.chip-R2 { --role: #f9a8d4; --ink: #3b1024; }
+.chip-RD { --role: #7dd3fc; --ink: #042033; }
+.chip-RT { --role: #f9a8d4; --ink: #3b1024; }
 
 .jersey {
   width: 64px;
@@ -519,7 +519,9 @@ button { cursor: pointer; }
   background: rgba(255, 255, 255, 0.16);
 }
 
+.pip-btn { border: 0; padding: 0; cursor: pointer; }
 .pip.now { outline: 2px solid #fff; outline-offset: 2px; }
+.admin-reset { margin: 8px auto 0; display: block; }
 .pip.ok { background: var(--good); }
 .pip.bad { background: var(--bad); }
 
