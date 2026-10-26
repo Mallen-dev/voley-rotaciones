@@ -14,11 +14,19 @@ export default function Court({
   return (
     <div className={`court-wrap court-${size}`}>
       <div className="net" aria-hidden="true">
-        <span className="antenna" />
-        <span className="mesh">
-          <span className="net-tag">RED</span>
+        <span className="post">
+          <span className="antenna" />
         </span>
-        <span className="antenna" />
+        <span className="net-body">
+          <span className="tape">
+            <span className="net-tag">RED</span>
+          </span>
+          <span className="mesh" />
+          <span className="tape tape-low" />
+        </span>
+        <span className="post">
+          <span className="antenna" />
+        </span>
       </div>
       <div
         className="court"
@@ -28,8 +36,12 @@ export default function Court({
           onCourtClick?.(event);
         }}
       >
-        <div className="attack-line" aria-hidden="true">
-          <span>3 m</span>
+        <div className="wood" aria-hidden="true" />
+        <div className="court-lines" aria-hidden="true">
+          <span className="boundary" />
+          <span className="attack-line">
+            <span>3 m</span>
+          </span>
         </div>
         {drawn.map((token) => (
           <div

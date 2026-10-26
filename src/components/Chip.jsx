@@ -27,7 +27,9 @@ export default function Chip({
   const label = name ? `${name} (${role})` : role;
   const content = (
     <>
-      <span className="chip-id">{role}</span>
+      <span className="chip-face">
+        <span className="chip-id">{role}</span>
+      </span>
       {variant === "bench" && name ? <span className="chip-name">{name}</span> : null}
     </>
   );
