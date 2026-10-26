@@ -6,6 +6,7 @@ export default function Chip({
   lifted = false,
   ghost = false,
   wrong = false,
+  right = false,
   setter = false,
   onPointerDown,
 }) {
@@ -17,6 +18,7 @@ export default function Chip({
     lifted ? "is-lifted" : "",
     ghost ? "is-ghost" : "",
     wrong ? "is-wrong" : "",
+    right ? "is-right" : "",
     setter ? "is-setter" : "",
   ]
     .filter(Boolean)

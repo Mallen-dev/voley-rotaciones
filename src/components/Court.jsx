@@ -1,20 +1,21 @@
 import Chip from "./Chip";
-import { ZONE_LABEL, ZONE_ORDER, isFront } from "../data/rotations";
+import { slotsToTokens } from "../data/rotations";
 
 export default function Court({
-  placements = {},
-  ghosts = {},
-  zoneClass = {},
-  hoverZone = null,
-  selectedRole = null,
-  draggingRole = null,
+  slots = null,
+  tokens = [],
+  ghosts = [],
   setter = null,
   markSetter = false,
   size = "full",
-  onZoneClick,
-  onChipPointerDown,
+  interactive = false,
   names = {},
+  onCourtClick,
+  onChipPointerDown,
 }) {
+  const fixed = slots ? slotsToTokens(slots, markSetter ? setter : null) : [];
+  const drawn = [...ghosts, ...(slots ? fixed : tokens)];
+
   return (
     <div className={`court-wrap court-${size}`}>
       <div className="net" aria-hidden="true">
@@ -24,45 +25,39 @@ export default function Court({
         </span>
         <span className="antenna" />
       </div>
-      <div className="court">
+      <div
+        className="court"
+        data-court={interactive ? "true" : undefined}
+        onClick={(event) => {
+          if (event.target.closest(".chip")) return;
+          onCourtClick?.(event);
+        }}
+      >
         <div className="attack-line" aria-hidden="true">
           <span>3 m</span>
         </div>
-        <div className="zones">
-          {ZONE_ORDER.map((zone) => {
-            const role = placements[zone];
-            const ghost = ghosts[zone];
-            const state = [zoneClass[zone] || "", hoverZone === zone ? "hover" : ""]
-              .filter(Boolean)
-              .join(" ");
-
-            return (
-              <div
-                key={zone}
-                className={`zone ${state} ${isFront(zone) ? "front" : "back"}`}
-                data-zone={zone}
-                onClick={() => onZoneClick?.(zone)}
-              >
-                <span className="zone-label">{ZONE_LABEL[zone]}</span>
-                <div className="zone-stack">
-                  {ghost ? <Chip role={ghost} variant="court" ghost /> : null}
-                  {role ? (
-                    <Chip
-                      role={role}
-                      name={names[role]}
-                      variant="court"
-                      selected={selectedRole === role}
-                      lifted={draggingRole === role}
-                      wrong={zoneClass[zone] === "wrong"}
-                      setter={markSetter && role === setter}
-                      onPointerDown={onChipPointerDown}
-                    />
-                  ) : null}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <span className="row-label row-front">Delantero</span>
+        <span className="row-label row-back">Trasero</span>
+        {drawn.map((token) => (
+          <div
+            key={token.id || `${token.ghost ? "ghost" : "live"}-${token.role}`}
+            className={`token ${token.ghost ? "is-ghost" : ""}`}
+            style={{ left: `${token.x}%`, top: `${token.y}%` }}
+          >
+            <Chip
+              role={token.role}
+              name={names[token.role]}
+              variant="court"
+              ghost={Boolean(token.ghost)}
+              selected={Boolean(token.selected)}
+              lifted={Boolean(token.lifted)}
+              wrong={Boolean(token.wrong)}
+              right={Boolean(token.right)}
+              setter={Boolean(token.setter)}
+              onPointerDown={token.ghost ? undefined : onChipPointerDown}
+            />
+          </div>
+        ))}
       </div>
     </div>
   );

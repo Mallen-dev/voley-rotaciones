@@ -6,9 +6,10 @@ import {
   ROLE_IDS,
   ROLES,
   ROTATIONS,
-  ZONE_ORDER,
+  ZONE_CENTER,
   explainRole,
   explainRotation,
+  zoneAt,
   zoneOf,
 } from "../data/rotations";
 
@@ -26,7 +27,7 @@ export default function Game({ mode, role, onExit, onHelp, onHard, onPick }) {
   const [order] = useState(() => ROTATIONS.map((_, index) => index));
   const [step, setStep] = useState(0);
   const [rotationIndex, setRotationIndex] = useState(() => (focus ? 0 : randomIndex()));
-  const [placements, setPlacements] = useState(emptyPlacements);
+  const [positions, setPositions] = useState(emptyPlacements);
   const [resolved, setResolved] = useState(false);
   const [selected, setSelected] = useState(null);
   const [lastOk, setLastOk] = useState(null);
@@ -35,7 +36,6 @@ export default function Game({ mode, role, onExit, onHelp, onHard, onPick }) {
   const [tally, setTally] = useState({ ok: 0, total: 0 });
   const [phase, setPhase] = useState("play");
   const [drag, setDrag] = useState(null);
-  const [hoverZone, setHoverZone] = useState(null);
 
   const dragRef = useRef(null);
   const placeRef = useRef(() => {});
@@ -44,46 +44,46 @@ export default function Game({ mode, role, onExit, onHelp, onHard, onPick }) {
   const selectedRef = useRef(null);
 
   const rotation = focus ? ROTATIONS[order[step]] : ROTATIONS[rotationIndex];
-  const placedCount = ZONE_ORDER.filter((zone) => placements[zone]).length;
-  const canResolve = focus ? placedCount === 1 : placedCount === 6;
+  const placedIds = focus ? (positions[role] ? [role] : []) : ROLE_IDS.filter((id) => positions[id]);
+  const canResolve = focus ? placedIds.length === 1 : placedIds.length === 6;
   const isLast = focus && step === order.length - 1;
 
   const benchRoles = focus
-    ? ZONE_ORDER.some((zone) => placements[zone] === role)
+    ? positions[role]
       ? []
       : [role]
-    : ROLE_IDS.filter((id) => !ZONE_ORDER.some((zone) => placements[zone] === id));
+    : ROLE_IDS.filter((id) => !positions[id]);
 
-  function place(roleId, zone) {
+  function courtPoint(clientX, clientY) {
+    const court = document.querySelector("[data-court='true']");
+    if (!court) return null;
+    const rect = court.getBoundingClientRect();
+    const inside =
+      clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom;
+    if (!inside) return null;
+    return {
+      x: Math.min(92, Math.max(8, ((clientX - rect.left) / rect.width) * 100)),
+      y: Math.min(90, Math.max(10, ((clientY - rect.top) / rect.height) * 100)),
+    };
+  }
+
+  function placeAt(roleId, point) {
     if (resolvedRef.current) return;
-    setPlacements((prev) => {
-      const next = { ...prev };
-      let origin = null;
-      for (const key of Object.keys(next)) {
-        if (next[key] === roleId) origin = key;
-      }
-      const occupant = next[zone];
-      if (origin) delete next[origin];
-      if (occupant && occupant !== roleId && origin) next[origin] = occupant;
-      next[zone] = roleId;
-      return next;
-    });
+    setPositions((prev) => ({ ...prev, [roleId]: point }));
     setSelected(null);
   }
 
   function unplace(roleId) {
     if (resolvedRef.current) return;
-    setPlacements((prev) => {
+    setPositions((prev) => {
       const next = { ...prev };
-      for (const key of Object.keys(next)) {
-        if (next[key] === roleId) delete next[key];
-      }
+      delete next[roleId];
       return next;
     });
     setSelected(null);
   }
 
-  placeRef.current = place;
+  placeRef.current = placeAt;
   unplaceRef.current = unplace;
   resolvedRef.current = resolved;
   selectedRef.current = selected;
@@ -98,10 +98,7 @@ export default function Game({ mode, role, onExit, onHelp, onHard, onPick }) {
       current.x = event.clientX;
       current.y = event.clientY;
       if (moved) document.body.classList.add("is-dragging");
-      const under = document.elementFromPoint(event.clientX, event.clientY);
-      const zone = under?.closest("[data-zone]")?.dataset.zone ?? null;
       setDrag({ role: current.role, x: event.clientX, y: event.clientY, moved });
-      setHoverZone(moved ? zone : null);
     }
 
     function onUp(event) {
@@ -109,16 +106,15 @@ export default function Game({ mode, role, onExit, onHelp, onHard, onPick }) {
       if (!current || event.pointerId !== current.pointerId) return;
       dragRef.current = null;
       document.body.classList.remove("is-dragging");
-      setHoverZone(null);
       setDrag(null);
       if (resolvedRef.current) return;
       if (!current.moved) {
         setSelected((value) => (value === current.role ? null : current.role));
         return;
       }
+      const point = courtPoint(event.clientX, event.clientY);
       const under = document.elementFromPoint(event.clientX, event.clientY);
-      const zone = under?.closest("[data-zone]")?.dataset.zone ?? null;
-      if (zone) placeRef.current(current.role, zone);
+      if (point) placeRef.current(current.role, point);
       else if (under?.closest("[data-bench]")) unplaceRef.current(current.role);
     }
 
@@ -145,21 +141,21 @@ export default function Game({ mode, role, onExit, onHelp, onHard, onPick }) {
     setDrag({ role: roleId, x: event.clientX, y: event.clientY, moved: false });
   }
 
-  function boardIsCorrect(board = placements) {
-    if (!focus) {
-      return ZONE_ORDER.every((zone) => board[zone] === rotation.slots[zone]);
-    }
-    const correctZone = zoneOf(rotation, role);
-    const occupied = ZONE_ORDER.filter((zone) => board[zone]);
-    return occupied.length === 1 && board[correctZone] === role;
+  function spotIsRight(id, board) {
+    const spot = board[id];
+    return Boolean(spot) && zoneAt(spot.x, spot.y) === zoneOf(rotation, id);
+  }
+
+  function boardIsCorrect(board = positions) {
+    if (!focus) return ROLE_IDS.every((id) => spotIsRight(id, board));
+    return spotIsRight(role, board);
   }
 
   function clearBoard() {
-    setPlacements(emptyPlacements());
+    setPositions(emptyPlacements());
     setResolved(false);
     setSelected(null);
     setLastOk(null);
-    setHoverZone(null);
   }
 
   function retry() {
@@ -200,37 +196,32 @@ export default function Game({ mode, role, onExit, onHelp, onHard, onPick }) {
     clearBoard();
   }
 
-  const ghosts = {};
-  const zoneClass = {};
-  if (resolved) {
-    if (focus) {
-      const correctZone = zoneOf(rotation, role);
-      ghosts[correctZone] = role;
-      for (const zone of ZONE_ORDER) {
-        if (placements[zone] === role && zone === correctZone) zoneClass[zone] = "correct";
-        else if (placements[zone] === role) zoneClass[zone] = "wrong";
-        else if (zone === correctZone) zoneClass[zone] = "miss";
-      }
-    } else {
-      for (const zone of ZONE_ORDER) {
-        ghosts[zone] = rotation.slots[zone];
-        if (!placements[zone]) zoneClass[zone] = "miss";
-        else if (placements[zone] === rotation.slots[zone]) zoneClass[zone] = "correct";
-        else zoneClass[zone] = "wrong";
-      }
-    }
-  }
+  const ghostRoles = resolved ? (focus ? [role] : ROLE_IDS) : [];
+  const ghosts = ghostRoles.map((id) => {
+    const spot = ZONE_CENTER[zoneOf(rotation, id)];
+    return { id: `ghost-${id}`, role: id, x: spot.x, y: spot.y, ghost: true };
+  });
+  const tokens = Object.entries(positions).map(([id, spot]) => ({
+    id,
+    role: id,
+    x: spot.x,
+    y: spot.y,
+    selected: selected === id,
+    lifted: drag?.role === id,
+    right: resolved && zoneAt(spot.x, spot.y) === zoneOf(rotation, id),
+    wrong: resolved && zoneAt(spot.x, spot.y) !== zoneOf(rotation, id),
+  }));
 
   const correctCount = focus
     ? lastOk
       ? 1
       : 0
-    : ZONE_ORDER.filter((zone) => placements[zone] && placements[zone] === rotation.slots[zone]).length;
+    : ROLE_IDS.filter((id) => spotIsRight(id, positions)).length;
 
   const title = focus ? ROLES[role].name : "Nivel difícil";
   const prompt = focus
-    ? `Eres ${ROLES[role].name}. ¿En qué zona te pones?`
-    : "Coloca a los seis en recepción.";
+    ? `Eres ${ROLES[role].name}. Arrástralo a su sitio.`
+    : "Arrastra a los seis por el campo.";
 
   const why = focus ? explainRole(rotation, role) : explainRotation(rotation);
   const firstTry = focus ? attempts[step] : null;
@@ -308,23 +299,20 @@ export default function Game({ mode, role, onExit, onHelp, onHard, onPick }) {
                 A la primera: {tally.ok}/{tally.total}
               </p>
             )}
-            {selected && !resolved ? <p className="hint">Toca la zona donde va.</p> : null}
+            {selected && !resolved ? <p className="hint">Toca el campo donde va.</p> : null}
           </div>
         </section>
 
         <section className="stage">
           <Court
-            placements={placements}
+            tokens={tokens}
             ghosts={ghosts}
-            zoneClass={zoneClass}
-            hoverZone={hoverZone}
-            selectedRole={selected}
-            draggingRole={drag?.role ?? null}
-            setter={rotation.setter}
+            interactive
             names={Object.fromEntries(ROLE_IDS.map((id) => [id, ROLES[id].name]))}
-            onZoneClick={(zone) => {
+            onCourtClick={(event) => {
               if (resolved || !selectedRef.current) return;
-              place(selectedRef.current, zone);
+              const point = courtPoint(event.clientX, event.clientY);
+              if (point) placeAt(selectedRef.current, point);
             }}
             onChipPointerDown={beginDrag}
           />

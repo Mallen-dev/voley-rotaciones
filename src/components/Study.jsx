@@ -13,12 +13,7 @@ export default function Study({ onBack, onHelp }) {
       <div className="study-grid">
         {ROTATIONS.map((rotation) => (
           <article key={rotation.id} className="study-card">
-            <Court
-              placements={rotation.slots}
-              setter={rotation.setter}
-              markSetter
-              size="mini"
-            />
+            <Court slots={rotation.slots} setter={rotation.setter} markSetter size="mini" />
             <div className="study-meta">
               <strong>Rotación {rotation.id}</strong>
               <span>

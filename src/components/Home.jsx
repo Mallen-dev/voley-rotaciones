@@ -34,11 +34,11 @@ export default function Home({ onTrain, onHard, onStudy, onHelp }) {
         </header>
 
         <div className="home-court">
-          <Court placements={sample.slots} setter={sample.setter} markSetter size="hero" />
+          <Court slots={sample.slots} setter={sample.setter} markSetter size="hero" />
           <p className="court-caption">
             Rotación 1 · coloca <strong>A1</strong>
           </p>
-          <p className="court-note">Red arriba. Delante 4 · 3 · 2. Atrás 5 · 6 · 1.</p>
+          <p className="court-note">Red arriba. Delantero junto a la red. Trasero detrás.</p>
         </div>
 
         <div className="home-actions">
