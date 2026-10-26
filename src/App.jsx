@@ -10,7 +10,7 @@ import { clearLineup, loadLineup, saveLineup } from "./data/lineupStore";
 export default function App() {
   const [screen, setScreen] = useState("home");
   const [help, setHelp] = useState(false);
-  const [role, setRole] = useState("A1");
+  const [role, setRole] = useState("AD");
   const [pack, setPack] = useState(() => ({ ...loadLineup(), stamp: 0 }));
 
   function openHelp() {

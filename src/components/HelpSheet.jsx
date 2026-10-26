@@ -27,15 +27,16 @@ export default function HelpSheet({ onClose }) {
 
         <h3>Quién coloca</h3>
         <p>
-          Hay dos armadores, A1 y A2, uno enfrente del otro. Coloca el que está en la fila
-          delantera, junto a la red. El que se queda en la trasera juega de opuesto.
+          Hay dos armadores, el armador delantero (AD) y el armador trasero (AT), uno enfrente
+          del otro. Coloca el que está en la fila delantera, junto a la red. El que se queda
+          en la trasera juega de opuesto.
         </p>
-        <p>A1 coloca en las rotaciones 1, 5 y 6. A2 coloca en las 2, 3 y 4, cuando sube a red.</p>
 
         <h3>Recepción</h3>
         <p>
           En recepción siempre se ve un central (C) delante y el líbero (L) en el sitio del
-          central de atrás. RD es el receptor delantero y RT el receptor trasero.
+          central de atrás. RD es el receptor delantero y RT el receptor trasero. Las rotaciones
+          se llaman R1, R2, R3, R4, R5 y R6.
         </p>
         <p>
           Esto es recepción: saca el otro equipo. La fila trasera no es el saque.

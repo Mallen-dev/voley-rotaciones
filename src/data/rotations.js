@@ -1,14 +1,19 @@
-export const ROLE_IDS = ["A1", "A2", "C", "L", "RD", "RT"];
+export const ROLE_IDS = ["AD", "AT", "C", "L", "RD", "RT"];
+const SETTER_IDS = ["AD", "AT"];
+
+export function rotationName(id) {
+  return `R${id}`;
+}
 
 export const ROLES = {
-  A1: {
-    id: "A1",
-    name: "Armador 1",
+  AD: {
+    id: "AD",
+    name: "Armador delantero",
     hint: "Coloca cuando está delante",
   },
-  A2: {
-    id: "A2",
-    name: "Armador 2",
+  AT: {
+    id: "AT",
+    name: "Armador trasero",
     hint: "Coloca cuando sube a la red",
   },
   C: {
@@ -54,12 +59,12 @@ export const ZONE_CENTER = {
 };
 
 const RAW_ROTATIONS = [
-  { id: 1, setter: "A1", slots: { z4: "RD", z3: "C", z2: "A1", z5: "A2", z6: "L", z1: "RT" } },
-  { id: 2, setter: "A2", slots: { z4: "A2", z3: "RD", z2: "C", z5: "L", z6: "RT", z1: "A1" } },
-  { id: 3, setter: "A2", slots: { z4: "C", z3: "A2", z2: "RD", z5: "RT", z6: "A1", z1: "L" } },
-  { id: 4, setter: "A2", slots: { z4: "RT", z3: "C", z2: "A2", z5: "A1", z6: "L", z1: "RD" } },
-  { id: 5, setter: "A1", slots: { z4: "A1", z3: "RT", z2: "C", z5: "L", z6: "RD", z1: "A2" } },
-  { id: 6, setter: "A1", slots: { z4: "C", z3: "A1", z2: "RT", z5: "RD", z6: "A2", z1: "L" } },
+  { id: 1, setter: "AD", slots: { z4: "RD", z3: "C", z2: "AD", z5: "AT", z6: "L", z1: "RT" } },
+  { id: 2, setter: "AT", slots: { z4: "AT", z3: "RD", z2: "C", z5: "L", z6: "RT", z1: "AD" } },
+  { id: 3, setter: "AT", slots: { z4: "C", z3: "AT", z2: "RD", z5: "RT", z6: "AD", z1: "L" } },
+  { id: 4, setter: "AT", slots: { z4: "RT", z3: "C", z2: "AT", z5: "AD", z6: "L", z1: "RD" } },
+  { id: 5, setter: "AD", slots: { z4: "AD", z3: "RT", z2: "C", z5: "L", z6: "RD", z1: "AT" } },
+  { id: 6, setter: "AD", slots: { z4: "C", z3: "AD", z2: "RT", z5: "RD", z6: "AT", z1: "L" } },
 ];
 
 export function zoneAt(x, y) {
@@ -69,10 +74,10 @@ export function zoneAt(x, y) {
 }
 
 export function deriveSetter(positions) {
-  const setters = ["A1", "A2"].filter((id) => positions[id]);
+  const setters = SETTER_IDS.filter((id) => positions[id]);
   const front = setters.filter((id) => positions[id].y < 37.5);
   const pool = front.length ? front : setters;
-  return pool.sort((a, b) => positions[a].y - positions[b].y)[0] || "A1";
+  return pool.sort((a, b) => positions[a].y - positions[b].y)[0] || "AD";
 }
 
 export function rotationFromSlots(raw) {
@@ -102,32 +107,37 @@ export function zoneOf(rotation, role) {
 }
 
 export function explainRotation(rotation) {
+  const code = rotationName(rotation.id);
+  const setterName = ROLES[rotation.setter]?.name || rotation.setter;
   const setterZone = ZONE_LABEL[zoneOf(rotation, rotation.setter)];
-  const other = rotation.setter === "A1" ? "A2" : "A1";
+  const other = rotation.setter === "AD" ? "AT" : "AD";
+  const otherName = ROLES[other].name;
   const otherZone = ZONE_LABEL[zoneOf(rotation, other)];
   const centralZone = ZONE_LABEL[zoneOf(rotation, "C")];
   const liberoZone = ZONE_LABEL[zoneOf(rotation, "L")];
 
-  return `Coloca ${rotation.setter} porque está ${setterZone}, en red. ${other} está ${otherZone} y juega de opuesto. El central está ${centralZone} y el líbero ${liberoZone}.`;
+  return `En ${code} coloca el ${setterName.toLowerCase()} porque está ${setterZone}, en red. El ${otherName.toLowerCase()} está ${otherZone} y juega de opuesto. El central está ${centralZone} y el líbero ${liberoZone}.`;
 }
 
 export function explainRole(rotation, role) {
   const zone = ZONE_LABEL[zoneOf(rotation, role)];
   const name = ROLES[role].name;
+  const code = rotationName(rotation.id);
+  const setterName = ROLES[rotation.setter]?.name || rotation.setter;
 
   if (role === rotation.setter) {
-    return `En la rotación ${rotation.id}, ${name} coloca desde ${zone}.`;
+    return `En ${code}, ${name} coloca desde ${zone}.`;
   }
   if (role === "L") {
-    return `En la rotación ${rotation.id} el líbero recibe ${zone}, en el sitio del central de atrás.`;
+    return `En ${code} el líbero recibe ${zone}, en el sitio del central de atrás.`;
   }
   if (role === "C") {
-    return `En la rotación ${rotation.id} el central de red está ${zone}. Coloca ${rotation.setter}.`;
+    return `En ${code} el central de red está ${zone}. Coloca el ${setterName.toLowerCase()}.`;
   }
-  if (role === "A1" || role === "A2") {
-    return `En la rotación ${rotation.id}, ${name} está ${zone} y juega de opuesto. Coloca ${rotation.setter}.`;
+  if (SETTER_IDS.includes(role)) {
+    return `En ${code}, ${name} está ${zone} y juega de opuesto. Coloca el ${setterName.toLowerCase()}.`;
   }
-  return `En la rotación ${rotation.id}, ${name} está ${zone}. Coloca ${rotation.setter}.`;
+  return `En ${code}, ${name} está ${zone}. Coloca el ${setterName.toLowerCase()}.`;
 }
 
 export function readCourtPoint(clientX, clientY) {

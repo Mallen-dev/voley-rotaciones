@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import Court from "./Court";
 import Chip from "./Chip";
 import TopBar from "./TopBar";
-import { ROLE_IDS, ROLES, deriveSetter, readCourtPoint } from "../data/rotations";
+import { ROLE_IDS, ROLES, deriveSetter, readCourtPoint, rotationName } from "../data/rotations";
 import { lineupUrl } from "../data/lineupStore";
 
 export default function Admin({ rotations, onBack, onHelp, onSave, onReset }) {
@@ -130,7 +130,7 @@ export default function Admin({ rotations, onBack, onHelp, onSave, onReset }) {
         <section className="meta">
           <div className="rot-block">
             <p className="eyebrow">Solución de la rotación</p>
-            <p className="rot-num">{index + 1}</p>
+            <p className="rot-num">{rotationName(index + 1)}</p>
           </div>
           <div className="meta-copy">
             <p className="prompt">Coloca a los seis donde deben quedar. Esto es lo que se verá difuminado.</p>
@@ -144,7 +144,7 @@ export default function Admin({ rotations, onBack, onHelp, onSave, onReset }) {
                     type="button"
                     className={`pip pip-btn ${cls}`}
                     onClick={() => setIndex(boardIndex)}
-                    aria-label={`Rotación ${boardIndex + 1}`}
+                    aria-label={rotationName(boardIndex + 1)}
                   />
                 );
               })}
@@ -176,7 +176,7 @@ export default function Admin({ rotations, onBack, onHelp, onSave, onReset }) {
                 onPointerDown={beginDrag}
               />
             ))}
-            {benchRoles.length === 0 ? <p className="bench-hint">Rotación completa. Puedes moverlas.</p> : null}
+            {benchRoles.length === 0 ? <p className="bench-hint">Las seis están en el campo. Puedes moverlas.</p> : null}
           </div>
         </section>
 

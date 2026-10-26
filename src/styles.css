@@ -206,8 +206,8 @@ button { cursor: pointer; }
   box-shadow: 0 8px 14px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
-.chip-A1 { --role: #f5c400; --ink: #241c00; }
-.chip-A2 { --role: #ff8a1e; --ink: #2a1200; }
+.chip-AD { --role: #f5c400; --ink: #241c00; }
+.chip-AT { --role: #ff8a1e; --ink: #2a1200; }
 .chip-C { --role: #ff4d4d; --ink: #2a0606; }
 .chip-L { --role: #3dffb0; --ink: #04281a; }
 .chip-RD { --role: #7dd3fc; --ink: #042033; }
@@ -587,9 +587,9 @@ button { cursor: pointer; }
 
 .study-meta {
   display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  align-items: baseline;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
   margin-top: 6px;
   font-size: 0.92rem;
 }

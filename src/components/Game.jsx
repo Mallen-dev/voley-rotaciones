@@ -232,7 +232,7 @@ export default function Game({ mode, role, rotations, onExit, onHelp, onHard, on
           <div className="result-row">
             {attempts.map((item) => (
               <div key={item.rotationId} className={`result-pip ${item.ok ? "ok" : "bad"}`}>
-                <strong>{item.rotationId}</strong>
+                <strong>{`R${item.rotationId}`}</strong>
                 <span>{item.ok ? "Bien" : "Mal"}</span>
               </div>
             ))}
@@ -262,10 +262,9 @@ export default function Game({ mode, role, rotations, onExit, onHelp, onHard, on
         <section className="meta">
           <div className="rot-block">
             <p className="eyebrow">Recepción · saca el rival</p>
-            <p className="rot-num">{rotation.id}</p>
+            <p className="rot-num">{`R${rotation.id}`}</p>
           </div>
           <div className="meta-copy">
-            <p className="rot-label">Rotación {rotation.id}</p>
             <p className="prompt">{prompt}</p>
             {focus ? (
               <div className="pips" aria-label="Progreso">

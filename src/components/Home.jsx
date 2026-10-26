@@ -1,5 +1,5 @@
 import Court from "./Court";
-import { tokensFor } from "../data/rotations";
+import { ROLES, rotationName, tokensFor } from "../data/rotations";
 
 function Ball() {
   return (
@@ -36,7 +36,7 @@ export default function Home({ rotation, custom, onTrain, onHard, onStudy, onAdm
         <div className="home-court">
           <Court tokens={tokensFor(sample)} size="hero" />
           <p className="court-caption">
-            Rotación 1 · coloca <strong>{sample.setter}</strong>
+            {rotationName(sample.id)} · coloca <strong>{ROLES[sample.setter].name}</strong>
           </p>
           <p className="court-note">
             {custom ? "Estás usando las rotaciones del modo admin." : "Red arriba. La línea de 3 m separa las dos filas."}
