@@ -47,7 +47,7 @@ export default function Home({ rotation, custom, onTrain, onHard, onStudy, onAdm
           <button type="button" className="mode-card" onClick={onTrain}>
             <span className="mode-kicker">Entrenar</span>
             <strong>Mi puesto</strong>
-            <span>Elige tu ficha. Van saliendo las rotaciones y marcas dónde te pones.</span>
+            <span>Armador, central, líbero o receptor. Si hay delantero y trasero, colocas los dos.</span>
           </button>
           <button type="button" className="mode-card mode-hard" onClick={onHard}>
             <span className="mode-kicker">Reto</span>

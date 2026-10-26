@@ -52,7 +52,16 @@ export default function HelpSheet({ onClose }) {
         <h3>Cómo se juega</h3>
         <p>
           Arrastra la ficha por todo el campo. También puedes tocarla y después tocar el sitio.
-          Resolver marca bien o mal y deja, difuminada, la posición exacta.
+          Resolver deja, difuminada, la posición exacta.
+        </p>
+        <p>
+          En Mi puesto eliges armador, central, líbero o receptor. Armador y receptor colocan
+          el delantero y el trasero.
+        </p>
+        <p>
+          El cronómetro cuenta hasta que pulsas Resolver. La coincidencia es lo cerca que queda
+          tu ficha de la difuminada: 100% es encima. La nota es sobre 10. Si pasas el tiempo de
+          referencia, baja hasta 2,5 puntos.
         </p>
         <p>Si fallas, ¿Por qué? explica esa rotación. El cuadro de las seis está en Ver las 6.</p>
       </section>

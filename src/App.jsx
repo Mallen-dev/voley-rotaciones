@@ -10,7 +10,7 @@ import { clearLineup, loadLineup, saveLineup } from "./data/lineupStore";
 export default function App() {
   const [screen, setScreen] = useState("home");
   const [help, setHelp] = useState(false);
-  const [role, setRole] = useState("AD");
+  const [post, setPost] = useState("armador");
   const [pack, setPack] = useState(() => ({ ...loadLineup(), stamp: 0 }));
 
   function openHelp() {
@@ -50,16 +50,16 @@ export default function App() {
           onBack={() => setScreen("home")}
           onHelp={openHelp}
           onChoose={(next) => {
-            setRole(next);
+            setPost(next);
             setScreen("train");
           }}
         />
       ) : null}
       {screen === "train" ? (
         <Game
-          key={`${role}-${pack.stamp}`}
+          key={`${post}-${pack.stamp}`}
           mode="focus"
-          role={role}
+          post={post}
           rotations={pack.rotations}
           onExit={() => setScreen("home")}
           onHelp={openHelp}

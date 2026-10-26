@@ -5,9 +5,15 @@ import TopBar from "./TopBar";
 import {
   ROLE_IDS,
   ROLES,
-  explainRole,
+  boardMatch,
+  explainPost,
   explainRotation,
+  formatClock,
+  gradeFrom,
+  gradeLabel,
+  postById,
   readCourtPoint,
+  targetSeconds,
   zoneAt,
   zoneOf,
 } from "../data/rotations";
@@ -21,8 +27,18 @@ function emptyPlacements() {
   return {};
 }
 
-export default function Game({ mode, role, rotations, onExit, onHelp, onHard, onPick }) {
+function promptFor(duties) {
+  if (duties.length > 2) return "Arrastra a los seis por el campo.";
+  if (duties.length === 2) {
+    const [front, back] = duties.map((id) => ROLES[id].name.toLowerCase());
+    return `Coloca al ${front} y al ${back}.`;
+  }
+  return `Eres ${ROLES[duties[0]].name}. Arrástralo a su sitio.`;
+}
+
+export default function Game({ mode, post, rotations, onExit, onHelp, onHard, onPick }) {
   const focus = mode === "focus";
+  const duties = focus ? postById(post).roles : ROLE_IDS;
   const [order] = useState(() => rotations.map((_, index) => index));
   const [step, setStep] = useState(0);
   const [rotationIndex, setRotationIndex] = useState(() => (focus ? 0 : randomIndex(rotations.length)));
@@ -32,26 +48,24 @@ export default function Game({ mode, role, rotations, onExit, onHelp, onHard, on
   const [lastOk, setLastOk] = useState(null);
   const [scored, setScored] = useState(false);
   const [attempts, setAttempts] = useState([]);
-  const [tally, setTally] = useState({ ok: 0, total: 0 });
+  const [mark, setMark] = useState(null);
   const [phase, setPhase] = useState("play");
   const [drag, setDrag] = useState(null);
+  const [elapsed, setElapsed] = useState(0);
 
   const dragRef = useRef(null);
   const placeRef = useRef(() => {});
   const unplaceRef = useRef(() => {});
   const resolvedRef = useRef(false);
   const selectedRef = useRef(null);
+  const clockRef = useRef(null);
+  const sliceRef = useRef(0);
 
   const rotation = focus ? rotations[order[step]] : rotations[rotationIndex];
-  const placedIds = focus ? (positions[role] ? [role] : []) : ROLE_IDS.filter((id) => positions[id]);
-  const canResolve = focus ? placedIds.length === 1 : placedIds.length === 6;
+  const placedIds = duties.filter((id) => positions[id]);
+  const canResolve = placedIds.length === duties.length;
   const isLast = focus && step === order.length - 1;
-
-  const benchRoles = focus
-    ? positions[role]
-      ? []
-      : [role]
-    : ROLE_IDS.filter((id) => !positions[id]);
+  const benchRoles = duties.filter((id) => !positions[id]);
 
   function placeAt(roleId, point) {
     if (resolvedRef.current) return;
@@ -73,6 +87,17 @@ export default function Game({ mode, role, rotations, onExit, onHelp, onHard, on
   unplaceRef.current = unplace;
   resolvedRef.current = resolved;
   selectedRef.current = selected;
+
+  useEffect(() => {
+    const clock = { running: true, started: performance.now(), bank: 0 };
+    clockRef.current = clock;
+    const id = window.setInterval(() => {
+      const current = clockRef.current;
+      if (!current?.running) return;
+      setElapsed(current.bank + performance.now() - current.started);
+    }, 200);
+    return () => window.clearInterval(id);
+  }, []);
 
   useEffect(() => {
     function onMove(event) {
@@ -115,6 +140,28 @@ export default function Game({ mode, role, rotations, onExit, onHelp, onHard, on
     };
   }, []);
 
+  function pauseClock() {
+    const clock = clockRef.current;
+    if (!clock?.running) return clock?.bank ?? 0;
+    clock.bank += performance.now() - clock.started;
+    clock.running = false;
+    setElapsed(clock.bank);
+    return clock.bank;
+  }
+
+  function resumeClock() {
+    const clock = clockRef.current;
+    if (!clock || clock.running) return;
+    clock.started = performance.now();
+    clock.running = true;
+  }
+
+  function resetClock() {
+    clockRef.current = { running: true, started: performance.now(), bank: 0 };
+    sliceRef.current = 0;
+    setElapsed(0);
+  }
+
   function beginDrag(event, roleId) {
     if (resolved) return;
     dragRef.current = {
@@ -133,8 +180,7 @@ export default function Game({ mode, role, rotations, onExit, onHelp, onHard, on
   }
 
   function boardIsCorrect(board = positions) {
-    if (!focus) return ROLE_IDS.every((id) => spotIsRight(id, board));
-    return spotIsRight(role, board);
+    return duties.every((id) => spotIsRight(id, board));
   }
 
   function clearBoard() {
@@ -151,39 +197,50 @@ export default function Game({ mode, role, rotations, onExit, onHelp, onHard, on
   function resolve() {
     if (!canResolve || resolved) return;
     const ok = boardIsCorrect();
+    const bank = pauseClock();
     setLastOk(ok);
     setResolved(true);
     if (!scored) {
+      const seconds = Math.max(0, (bank - sliceRef.current) / 1000);
+      const match = boardMatch(rotation, positions, duties);
+      const nota = gradeFrom(match, seconds, duties.length);
+      const entry = { rotationId: rotation.id, ok, match, seconds, nota };
+      setMark(entry);
       setScored(true);
-      if (focus) {
-        setAttempts((prev) => [...prev, { rotationId: rotation.id, ok }]);
-      } else {
-        setTally((prev) => ({ ok: prev.ok + (ok ? 1 : 0), total: prev.total + 1 }));
-      }
+      setAttempts((prev) => [...prev, entry]);
     }
   }
 
   function next() {
     if (focus && isLast) {
+      pauseClock();
       setPhase("summary");
       return;
     }
-    if (focus) setStep((value) => value + 1);
-    else setRotationIndex((value) => randomIndex(rotations.length, value));
+    if (focus) {
+      sliceRef.current = clockRef.current?.bank ?? 0;
+      setStep((value) => value + 1);
+      resumeClock();
+    } else {
+      setRotationIndex((value) => randomIndex(rotations.length, value));
+      resetClock();
+    }
     setScored(false);
+    setMark(null);
     clearBoard();
   }
 
   function replay() {
     setStep(0);
     setAttempts([]);
+    setMark(null);
     setScored(false);
     setPhase("play");
+    resetClock();
     clearBoard();
   }
 
-  const ghostRoles = resolved ? (focus ? [role] : ROLE_IDS) : [];
-  const ghosts = ghostRoles.map((id) => {
+  const ghosts = (resolved ? duties : []).map((id) => {
     const spot = rotation.positions[id];
     return { id: `ghost-${id}`, role: id, x: spot.x, y: spot.y, ghost: true };
   });
@@ -198,42 +255,41 @@ export default function Game({ mode, role, rotations, onExit, onHelp, onHard, on
     wrong: resolved && zoneAt(spot.x, spot.y) !== zoneOf(rotation, id),
   }));
 
-  const correctCount = focus
-    ? lastOk
-      ? 1
-      : 0
-    : ROLE_IDS.filter((id) => spotIsRight(id, positions)).length;
-
-  const title = focus ? ROLES[role].name : "Nivel difícil";
-  const prompt = focus
-    ? `Eres ${ROLES[role].name}. Arrástralo a su sitio.`
-    : "Arrastra a los seis por el campo.";
-
-  const why = focus ? explainRole(rotation, role) : explainRotation(rotation);
-  const firstTry = focus ? attempts[step] : null;
-  const fixedAfterMiss = Boolean(firstTry && !firstTry.ok && lastOk);
+  const correctCount = duties.filter((id) => spotIsRight(id, positions)).length;
+  const title = focus ? postById(post).name : "Nivel difícil";
+  const prompt = promptFor(duties);
+  const why = focus ? explainPost(rotation, duties) : explainRotation(rotation);
+  const firstTry = focus ? attempts[step] : attempts[attempts.length - 1];
+  const fixedAfterMiss = Boolean(firstTry && !firstTry.ok && lastOk && scored);
+  const shownMark = mark || (scored ? firstTry : null);
 
   if (phase === "summary") {
+    const chipCount = duties.length * attempts.length;
+    const totalSeconds = attempts.reduce((sum, item) => sum + item.seconds, 0);
+    const average = attempts.length
+      ? Math.round(attempts.reduce((sum, item) => sum + item.match, 0) / attempts.length)
+      : 0;
+    const nota = gradeFrom(average, totalSeconds, chipCount);
     const hits = attempts.filter((item) => item.ok).length;
     return (
       <main className="screen">
         <TopBar title="Resultado" onBack={onExit} onHelp={onHelp} />
         <section className="summary">
-          <p className="eyebrow">A la primera</p>
-          <p className="score">
-            {hits}
-            <span>/{attempts.length}</span>
-          </p>
+          <p className="eyebrow">{gradeLabel(nota)}</p>
+          <p className="score">{nota.toFixed(1)}</p>
+          <div className="grade-stats">
+            <span>Coincidencia {average}%</span>
+            <span>Tiempo {formatClock(totalSeconds * 1000)}</span>
+            <span>Referencia {formatClock(targetSeconds(chipCount) * 1000)}</span>
+          </div>
           <p className="lede">
-            {hits === attempts.length
-              ? "Las seis clavadas. Puedes pasar al nivel difícil."
-              : "El primer intento es el que cuenta. Las rojas son las que hay que repasar."}
+            {`La nota sale de lo cerca que queda cada ficha de la solución. 100% es encima. A la primera, la zona correcta en ${hits} de ${attempts.length}.`}
           </p>
           <div className="result-row">
             {attempts.map((item) => (
               <div key={item.rotationId} className={`result-pip ${item.ok ? "ok" : "bad"}`}>
                 <strong>{`R${item.rotationId}`}</strong>
-                <span>{item.ok ? "Bien" : "Mal"}</span>
+                <span>{item.match}%</span>
               </div>
             ))}
           </div>
@@ -255,13 +311,29 @@ export default function Game({ mode, role, rotations, onExit, onHelp, onHard, on
     );
   }
 
+  const hardAverage = attempts.length
+    ? (attempts.reduce((sum, item) => sum + item.nota, 0) / attempts.length).toFixed(1)
+    : null;
+  const zoneNote = fixedAfterMiss
+    ? "La zona ya cuadra. La nota es la del primer intento."
+    : lastOk
+      ? focus
+        ? "Zona correcta. 100% es encima de la ficha difuminada."
+        : `Zona correcta en ${correctCount} de 6. 100% es encima de la ficha difuminada.`
+      : focus
+        ? "Fuera de la zona. 100% es encima de la ficha difuminada."
+        : `Zona correcta en ${correctCount} de 6. 100% es encima de la ficha difuminada.`;
+
   return (
     <main className="screen game-screen">
       <TopBar title={title} onBack={onExit} onHelp={onHelp} />
       <div className="game-layout">
         <section className="meta">
           <div className="rot-block">
-            <p className="eyebrow">Recepción · saca el rival</p>
+            <div>
+              <p className="eyebrow">Recepción · saca el rival</p>
+              <p className={`clock ${resolved ? "is-paused" : ""}`}>{formatClock(elapsed)}</p>
+            </div>
             <p className="rot-num">{`R${rotation.id}`}</p>
           </div>
           <div className="meta-copy">
@@ -280,9 +352,7 @@ export default function Game({ mode, role, rotations, onExit, onHelp, onHard, on
                 })}
               </div>
             ) : (
-              <p className="tally">
-                A la primera: {tally.ok}/{tally.total}
-              </p>
+              <p className="tally">{hardAverage ? `Nota media ${hardAverage}` : "Primera rotación"}</p>
             )}
             {selected && !resolved ? <p className="hint">Toca el campo donde va.</p> : null}
           </div>
@@ -317,7 +387,9 @@ export default function Game({ mode, role, rotations, onExit, onHelp, onHard, on
               ))}
               {benchRoles.length === 0 ? (
                 <p className="bench-hint">
-                  {focus ? "Tu ficha está en el campo. Puedes moverla." : "Los seis están en el campo."}
+                  {duties.length > 1
+                    ? "Tus fichas están en el campo. Puedes moverlas."
+                    : "Tu ficha está en el campo. Puedes moverla."}
                 </p>
               ) : null}
             </div>
@@ -325,24 +397,11 @@ export default function Game({ mode, role, rotations, onExit, onHelp, onHard, on
         </section>
 
         <section className="feedback-slot">
-          {resolved ? (
-            <div className={`feedback ${lastOk ? "ok" : "bad"}`}>
-              <strong>
-                {focus
-                  ? lastOk
-                    ? fixedAfterMiss
-                      ? "Ahora sí"
-                      : "Bien"
-                    : "Mal"
-                  : lastOk
-                    ? "Bien"
-                    : `${correctCount} de 6`}
-              </strong>
-              <p>
-                {fixedAfterMiss
-                  ? "El primer intento contaba como fallo."
-                  : "La ficha difuminada marca el sitio justo."}
-              </p>
+          {resolved && shownMark ? (
+            <div className={`feedback ${shownMark.nota >= 5 ? "ok" : "bad"}`}>
+              <strong>{`${shownMark.nota.toFixed(1)} ${gradeLabel(shownMark.nota)}`}</strong>
+              <p className="grade-line">{`Coincidencia ${shownMark.match}%`}</p>
+              <p>{zoneNote}</p>
               <details className="why" open={!lastOk || fixedAfterMiss}>
                 <summary>¿Por qué?</summary>
                 <p>{why}</p>

@@ -574,8 +574,34 @@ button { cursor: pointer; }
   background: var(--bg-2);
 }
 
+.jersey-row { display: flex; gap: 8px; }
 .role-copy { display: grid; gap: 2px; }
 .role-copy small { color: var(--muted); }
+
+.clock {
+  margin: 2px 0 0;
+  font-family: Oswald, sans-serif;
+  font-size: 1.7rem;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.clock.is-paused { color: var(--muted); }
+
+.grade-line {
+  margin: 6px 0 0;
+  font-weight: 700;
+}
+
+.grade-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 16px;
+  margin: 8px 0 14px;
+  color: var(--muted);
+}
 
 .study-grid { grid-template-columns: 1fr 1fr; }
 
