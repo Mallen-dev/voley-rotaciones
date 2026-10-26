@@ -1,0 +1,17 @@
+{
+  "name": "Rotaciones de voley",
+  "short_name": "Rotaciones",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#101410",
+  "theme_color": "#101410",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
