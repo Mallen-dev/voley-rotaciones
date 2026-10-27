@@ -91,8 +91,6 @@ export const ROLES = {
   },
 };
 
-export const ZONE_ORDER = ["z4", "z3", "z2", "z5", "z6", "z1"];
-
 export const ZONE_LABEL = {
   z4: "delantero, a la izquierda",
   z3: "delantero, en el centro",
@@ -102,22 +100,55 @@ export const ZONE_LABEL = {
   z1: "trasero, a la derecha",
 };
 
-export const ZONE_CENTER = {
-  z4: { x: 17, y: 20 },
-  z3: { x: 50, y: 20 },
-  z2: { x: 83, y: 20 },
-  z5: { x: 17, y: 70 },
-  z6: { x: 50, y: 70 },
-  z1: { x: 83, y: 70 },
-};
-
-const RAW_ROTATIONS = [
-  { id: 1, setter: "AD", slots: { z4: "RD", z3: "C", z2: "AD", z5: "AT", z6: "L", z1: "RT" } },
-  { id: 2, setter: "AT", slots: { z4: "AT", z3: "RD", z2: "C", z5: "L", z6: "RT", z1: "AD" } },
-  { id: 3, setter: "AT", slots: { z4: "C", z3: "AT", z2: "RD", z5: "RT", z6: "AD", z1: "L" } },
-  { id: 4, setter: "AT", slots: { z4: "RT", z3: "C", z2: "AT", z5: "AD", z6: "L", z1: "RD" } },
-  { id: 5, setter: "AD", slots: { z4: "AD", z3: "RT", z2: "C", z5: "L", z6: "RD", z1: "AT" } },
-  { id: 6, setter: "AD", slots: { z4: "C", z3: "AD", z2: "RT", z5: "RD", z6: "AT", z1: "L" } },
+const SAVED_POSITIONS = [
+  {
+    AD: { x: 12, y: 10 },
+    AT: { x: 91, y: 82 },
+    C: { x: 12, y: 21 },
+    L: { x: 82, y: 62 },
+    RD: { x: 18, y: 61 },
+    RT: { x: 50, y: 74 },
+  },
+  {
+    AD: { x: 85, y: 10 },
+    AT: { x: 61, y: 88 },
+    C: { x: 12, y: 10 },
+    L: { x: 82, y: 62 },
+    RD: { x: 21, y: 62 },
+    RT: { x: 53, y: 70 },
+  },
+  {
+    AD: { x: 71, y: 10 },
+    AT: { x: 68, y: 85 },
+    C: { x: 72, y: 22 },
+    L: { x: 48, y: 70 },
+    RD: { x: 23, y: 56 },
+    RT: { x: 80, y: 59 },
+  },
+  {
+    AD: { x: 17, y: 10 },
+    AT: { x: 84, y: 86 },
+    C: { x: 17, y: 22 },
+    L: { x: 80, y: 58 },
+    RD: { x: 20, y: 57 },
+    RT: { x: 50, y: 71 },
+  },
+  {
+    AD: { x: 75, y: 10 },
+    AT: { x: 33, y: 85 },
+    C: { x: 16, y: 10 },
+    L: { x: 80, y: 62 },
+    RD: { x: 21, y: 62 },
+    RT: { x: 53, y: 76 },
+  },
+  {
+    AD: { x: 69, y: 10 },
+    AT: { x: 61, y: 88 },
+    C: { x: 70, y: 20 },
+    L: { x: 49, y: 65 },
+    RD: { x: 17, y: 58 },
+    RT: { x: 79, y: 60 },
+  },
 ];
 
 export function zoneAt(x, y) {
@@ -133,15 +164,11 @@ export function deriveSetter(positions) {
   return pool.sort((a, b) => positions[a].y - positions[b].y)[0] || "AD";
 }
 
-export function rotationFromSlots(raw) {
-  const positions = {};
-  for (const zone of ZONE_ORDER) {
-    positions[raw.slots[zone]] = { ...ZONE_CENTER[zone] };
-  }
-  return { id: raw.id, setter: raw.setter, positions };
-}
-
-export const DEFAULT_ROTATIONS = RAW_ROTATIONS.map(rotationFromSlots);
+export const DEFAULT_ROTATIONS = SAVED_POSITIONS.map((positions, index) => ({
+  id: index + 1,
+  setter: deriveSetter(positions),
+  positions,
+}));
 
 export function tokensFor(rotation) {
   return ROLE_IDS.map((id) => ({

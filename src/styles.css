@@ -548,7 +548,6 @@ button { cursor: pointer; }
 
 .pip-btn { border: 0; padding: 0; cursor: pointer; }
 .pip.now { outline: 2px solid #fff; outline-offset: 2px; }
-.admin-reset { margin: 8px auto 0; display: block; }
 .pip.ok { background: var(--good); }
 .pip.bad { background: var(--bad); }
 

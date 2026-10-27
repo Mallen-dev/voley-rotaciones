@@ -3,52 +3,33 @@ import Home from "./components/Home";
 import Study from "./components/Study";
 import RoleSelect from "./components/RoleSelect";
 import Game from "./components/Game";
-import Admin from "./components/Admin";
 import HelpSheet from "./components/HelpSheet";
-import { clearLineup, loadLineup, saveLineup } from "./data/lineupStore";
+import { DEFAULT_ROTATIONS } from "./data/rotations";
 
 export default function App() {
   const [screen, setScreen] = useState("home");
   const [help, setHelp] = useState(false);
   const [post, setPost] = useState("armador");
-  const [pack, setPack] = useState(() => ({ ...loadLineup(), stamp: 0 }));
-
-  function openHelp() {
-    setHelp(true);
-  }
-
-  function save(rotations) {
-    saveLineup(rotations);
-    setPack({ rotations, custom: true, stamp: Date.now() });
-  }
-
-  function resetLineup() {
-    clearLineup();
-    const fresh = loadLineup();
-    setPack({ ...fresh, stamp: Date.now() });
-    setScreen("home");
-  }
+  const rotations = DEFAULT_ROTATIONS;
 
   return (
     <div className="app">
       {screen === "home" ? (
         <Home
-          rotation={pack.rotations[0]}
-          custom={pack.custom}
+          rotation={rotations[0]}
           onTrain={() => setScreen("pick")}
           onHard={() => setScreen("hard")}
           onStudy={() => setScreen("study")}
-          onAdmin={() => setScreen("admin")}
-          onHelp={openHelp}
+          onHelp={() => setHelp(true)}
         />
       ) : null}
       {screen === "study" ? (
-        <Study rotations={pack.rotations} onBack={() => setScreen("home")} onHelp={openHelp} />
+        <Study rotations={rotations} onBack={() => setScreen("home")} onHelp={() => setHelp(true)} />
       ) : null}
       {screen === "pick" ? (
         <RoleSelect
           onBack={() => setScreen("home")}
-          onHelp={openHelp}
+          onHelp={() => setHelp(true)}
           onChoose={(next) => {
             setPost(next);
             setScreen("train");
@@ -57,34 +38,25 @@ export default function App() {
       ) : null}
       {screen === "train" ? (
         <Game
-          key={`${post}-${pack.stamp}`}
+          key={post}
           mode="focus"
           post={post}
-          rotations={pack.rotations}
+          rotations={rotations}
           onExit={() => setScreen("home")}
-          onHelp={openHelp}
+          onHelp={() => setHelp(true)}
           onHard={() => setScreen("hard")}
           onPick={() => setScreen("pick")}
         />
       ) : null}
       {screen === "hard" ? (
         <Game
-          key={`hard-${pack.stamp}`}
+          key="hard"
           mode="hard"
-          rotations={pack.rotations}
+          rotations={rotations}
           onExit={() => setScreen("home")}
-          onHelp={openHelp}
+          onHelp={() => setHelp(true)}
           onHard={() => setScreen("hard")}
           onPick={() => setScreen("pick")}
-        />
-      ) : null}
-      {screen === "admin" ? (
-        <Admin
-          rotations={pack.rotations}
-          onBack={() => setScreen("home")}
-          onHelp={openHelp}
-          onSave={save}
-          onReset={pack.custom ? resetLineup : null}
         />
       ) : null}
       {help ? <HelpSheet onClose={() => setHelp(false)} /> : null}

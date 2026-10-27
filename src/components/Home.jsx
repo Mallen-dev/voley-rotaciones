@@ -12,7 +12,7 @@ function Ball() {
   );
 }
 
-export default function Home({ rotation, custom, onTrain, onHard, onStudy, onAdmin, onHelp }) {
+export default function Home({ rotation, onTrain, onHard, onStudy, onHelp }) {
   const sample = rotation;
 
   return (
@@ -38,9 +38,7 @@ export default function Home({ rotation, custom, onTrain, onHard, onStudy, onAdm
           <p className="court-caption">
             {rotationName(sample.id)} · coloca <strong>{ROLES[sample.setter].name}</strong>
           </p>
-          <p className="court-note">
-            {custom ? "Estás usando las rotaciones del modo admin." : "Red arriba. La línea de 3 m separa las dos filas."}
-          </p>
+          <p className="court-note">Red arriba. La línea de 3 m separa las dos filas.</p>
         </div>
 
         <div className="home-actions">
@@ -56,9 +54,6 @@ export default function Home({ rotation, custom, onTrain, onHard, onStudy, onAdm
           </button>
           <button type="button" className="btn btn-ghost wide" onClick={onStudy}>
             Ver las 6 rotaciones
-          </button>
-          <button type="button" className="btn btn-quiet wide" onClick={onAdmin}>
-            Admin · definir las 6
           </button>
         </div>
       </div>
