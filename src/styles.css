@@ -349,8 +349,11 @@ button { cursor: pointer; }
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  height: 28px;
+  height: 36px;
+  margin-bottom: 10px;
   gap: 4px;
+  position: relative;
+  z-index: 2;
 }
 
 .mesh {
@@ -481,7 +484,7 @@ button { cursor: pointer; }
 
 .zone.back .zone-stack { inset: 10px 6px 22px; }
 
-.court-mini .net { height: 16px; }
+.court-mini .net { height: 22px; margin-bottom: 6px; }
 .court-mini .antenna { height: 20px; }
 .court-mini .mesh { height: 12px; }
 .court-mini .attack-line span, .court-mini .chip-face::before { display: none; }
