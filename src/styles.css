@@ -687,6 +687,13 @@ button { cursor: pointer; }
 
 .coach-gate p { margin: 0; color: var(--bad); }
 
+.topbar h1.is-hold {
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.admin-reset { margin: 8px auto 0; display: block; }
+
 .stats-block { margin-top: 22px; }
 
 .stats-block h2 {

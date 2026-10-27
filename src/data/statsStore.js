@@ -1,4 +1,4 @@
-const ENDPOINT = "https://crudcrud.com/api/b5eac1c9f71241098ea7c4eaeb4b2994/grades";
+const ENDPOINT = "https://crudcrud.com/api/c938941b7e4743a8be88242cf7e1cb4f/grades";
 const PENDING_KEY = "voley-stats-pending-v1";
 
 let flushing = false;

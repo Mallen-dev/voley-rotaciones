@@ -41,7 +41,7 @@ function Block({ title, summary }) {
   );
 }
 
-export default function Stats({ onBack, onHelp }) {
+export default function Stats({ onBack, onHelp, onAdmin }) {
   const [rows, setRows] = useState(null);
   const [failed, setFailed] = useState(false);
 
@@ -61,7 +61,7 @@ export default function Stats({ onBack, onHelp }) {
 
   return (
     <main className="screen">
-      <TopBar title="Estadísticas" onBack={onBack} onHelp={onHelp} />
+      <TopBar title="Estadísticas" onBack={onBack} onHelp={onHelp} onTitleHold={onAdmin} />
       {failed ? <p className="lede">No se han podido cargar las estadísticas.</p> : null}
       {rows ? (
         <>
