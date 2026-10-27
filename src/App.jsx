@@ -4,6 +4,7 @@ import Study from "./components/Study";
 import RoleSelect from "./components/RoleSelect";
 import Game from "./components/Game";
 import HelpSheet from "./components/HelpSheet";
+import Stats from "./components/Stats";
 import { DEFAULT_ROTATIONS } from "./data/rotations";
 
 export default function App() {
@@ -20,6 +21,7 @@ export default function App() {
           onTrain={() => setScreen("pick")}
           onHard={() => setScreen("hard")}
           onStudy={() => setScreen("study")}
+          onStats={() => setScreen("stats")}
           onHelp={() => setHelp(true)}
         />
       ) : null}
@@ -58,6 +60,9 @@ export default function App() {
           onHard={() => setScreen("hard")}
           onPick={() => setScreen("pick")}
         />
+      ) : null}
+      {screen === "stats" ? (
+        <Stats onBack={() => setScreen("home")} onHelp={() => setHelp(true)} />
       ) : null}
       {help ? <HelpSheet onClose={() => setHelp(false)} /> : null}
     </div>

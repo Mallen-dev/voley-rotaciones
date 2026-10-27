@@ -17,6 +17,7 @@ import {
   zoneAt,
   zoneOf,
 } from "../data/rotations";
+import { recordGrade } from "../data/statsStore";
 
 function randomIndex(total, except = -1) {
   const options = Array.from({ length: total }, (_, index) => index).filter((index) => index !== except);
@@ -205,6 +206,7 @@ export default function Game({ mode, post, rotations, onExit, onHelp, onHard, on
       const match = boardMatch(rotation, positions, duties);
       const nota = gradeFrom(match, seconds, duties.length);
       const entry = { rotationId: rotation.id, ok, match, seconds, nota };
+      recordGrade({ mode, rotationId: rotation.id, nota });
       setMark(entry);
       setScored(true);
       setAttempts((prev) => [...prev, entry]);

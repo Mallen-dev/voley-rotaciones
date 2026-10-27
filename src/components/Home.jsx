@@ -12,7 +12,7 @@ function Ball() {
   );
 }
 
-export default function Home({ rotation, onTrain, onHard, onStudy, onHelp }) {
+export default function Home({ rotation, onTrain, onHard, onStudy, onStats, onHelp }) {
   const sample = rotation;
 
   return (
@@ -54,6 +54,9 @@ export default function Home({ rotation, onTrain, onHard, onStudy, onHelp }) {
           </button>
           <button type="button" className="btn btn-ghost wide" onClick={onStudy}>
             Ver las 6 rotaciones
+          </button>
+          <button type="button" className="btn btn-quiet wide" onClick={onStats}>
+            Estadísticas
           </button>
         </div>
       </div>
