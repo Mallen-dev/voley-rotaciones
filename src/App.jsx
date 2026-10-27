@@ -1,17 +1,42 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Home from "./components/Home";
 import Study from "./components/Study";
 import RoleSelect from "./components/RoleSelect";
 import Game from "./components/Game";
 import HelpSheet from "./components/HelpSheet";
 import Stats from "./components/Stats";
+import CoachGate from "./components/CoachGate";
 import { DEFAULT_ROTATIONS } from "./data/rotations";
+import { coachUnlocked } from "./data/coachAccess";
 
 export default function App() {
-  const [screen, setScreen] = useState("home");
+  const [screen, setScreen] = useState(() => {
+    if (window.location.hash === "#entrenador") return coachUnlocked() ? "stats" : "coach";
+    return "home";
+  });
   const [help, setHelp] = useState(false);
   const [post, setPost] = useState("armador");
   const rotations = DEFAULT_ROTATIONS;
+
+  function goHome() {
+    if (window.location.hash === "#entrenador") {
+      const url = new URL(window.location.href);
+      url.hash = "";
+      window.history.replaceState(null, "", url);
+    }
+    setScreen("home");
+  }
+
+  function openCoach() {
+    const url = new URL(window.location.href);
+    url.hash = "entrenador";
+    window.history.replaceState(null, "", url);
+    setScreen(coachUnlocked() ? "stats" : "coach");
+  }
+
+  useEffect(() => {
+    if (window.location.hash === "#entrenador") openCoach();
+  }, []);
 
   return (
     <div className="app">
@@ -21,16 +46,16 @@ export default function App() {
           onTrain={() => setScreen("pick")}
           onHard={() => setScreen("hard")}
           onStudy={() => setScreen("study")}
-          onStats={() => setScreen("stats")}
+          onCoach={openCoach}
           onHelp={() => setHelp(true)}
         />
       ) : null}
       {screen === "study" ? (
-        <Study rotations={rotations} onBack={() => setScreen("home")} onHelp={() => setHelp(true)} />
+        <Study rotations={rotations} onBack={goHome} onHelp={() => setHelp(true)} />
       ) : null}
       {screen === "pick" ? (
         <RoleSelect
-          onBack={() => setScreen("home")}
+          onBack={goHome}
           onHelp={() => setHelp(true)}
           onChoose={(next) => {
             setPost(next);
@@ -44,7 +69,7 @@ export default function App() {
           mode="focus"
           post={post}
           rotations={rotations}
-          onExit={() => setScreen("home")}
+          onExit={goHome}
           onHelp={() => setHelp(true)}
           onHard={() => setScreen("hard")}
           onPick={() => setScreen("pick")}
@@ -55,14 +80,21 @@ export default function App() {
           key="hard"
           mode="hard"
           rotations={rotations}
-          onExit={() => setScreen("home")}
+          onExit={goHome}
           onHelp={() => setHelp(true)}
           onHard={() => setScreen("hard")}
           onPick={() => setScreen("pick")}
         />
       ) : null}
+      {screen === "coach" ? (
+        <CoachGate
+          onBack={goHome}
+          onHelp={() => setHelp(true)}
+          onUnlock={() => setScreen("stats")}
+        />
+      ) : null}
       {screen === "stats" ? (
-        <Stats onBack={() => setScreen("home")} onHelp={() => setHelp(true)} />
+        <Stats onBack={goHome} onHelp={() => setHelp(true)} />
       ) : null}
       {help ? <HelpSheet onClose={() => setHelp(false)} /> : null}
     </div>

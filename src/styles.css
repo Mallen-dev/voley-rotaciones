@@ -139,6 +139,8 @@ button { cursor: pointer; }
   line-height: 0.84;
   letter-spacing: 0.01em;
   text-transform: uppercase;
+  user-select: none;
+  touch-action: manipulation;
 }
 
 .ball {
@@ -663,6 +665,27 @@ button { cursor: pointer; }
   border-radius: 6px;
   color: var(--role, inherit);
 }
+
+.coach-gate {
+  display: grid;
+  gap: 10px;
+  max-width: 360px;
+  margin: 28px auto 0;
+}
+
+.coach-gate label { font-weight: 600; }
+
+.coach-gate input {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  color: var(--ink);
+  border-radius: 14px;
+  padding: 14px 16px;
+  font: inherit;
+}
+
+.coach-gate p { margin: 0; color: var(--bad); }
 
 .stats-block { margin-top: 22px; }
 

@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import Court from "./Court";
 import { ROLES, rotationName, tokensFor } from "../data/rotations";
 
@@ -12,8 +13,18 @@ function Ball() {
   );
 }
 
-export default function Home({ rotation, onTrain, onHard, onStudy, onStats, onHelp }) {
+export default function Home({ rotation, onTrain, onHard, onStudy, onCoach, onHelp }) {
   const sample = rotation;
+  const hold = useRef(0);
+
+  function startHold() {
+    window.clearTimeout(hold.current);
+    hold.current = window.setTimeout(onCoach, 700);
+  }
+
+  function cancelHold() {
+    window.clearTimeout(hold.current);
+  }
 
   return (
     <main className="screen home">
@@ -27,7 +38,16 @@ export default function Home({ rotation, onTrain, onHard, onStudy, onStats, onHe
       <div className="home-inner">
         <header className="home-copy">
           <Ball />
-          <h1 className="hero-title">Rotaciones</h1>
+          <h1
+            className="hero-title"
+            onPointerDown={startHold}
+            onPointerUp={cancelHold}
+            onPointerLeave={cancelHold}
+            onPointerCancel={cancelHold}
+            onContextMenu={(event) => event.preventDefault()}
+          >
+            Rotaciones
+          </h1>
           <p className="lede">
             Aprende dónde te pones en cada rotación. Funciona en el móvil y en el ordenador.
           </p>
@@ -54,9 +74,6 @@ export default function Home({ rotation, onTrain, onHard, onStudy, onStats, onHe
           </button>
           <button type="button" className="btn btn-ghost wide" onClick={onStudy}>
             Ver las 6 rotaciones
-          </button>
-          <button type="button" className="btn btn-quiet wide" onClick={onStats}>
-            Estadísticas
           </button>
         </div>
       </div>
