@@ -8,6 +8,9 @@
   --yellow-deep: #a87420;
   --good: #3dbe86;
   --bad: #e25b4a;
+  --court-1: #2f6fe0;
+  --court-2: #1a46b8;
+  --court-3: #14368f;
   --shadow: 0 18px 40px rgba(0, 0, 0, 0.42);
   color-scheme: dark;
   font-family: Outfit, "Segoe UI", sans-serif;
@@ -338,82 +341,52 @@ button { cursor: pointer; }
   pointer-events: none;
 }
 
-.court-wrap {
-  width: min(81.8%, 426px);
-  margin: 0 auto;
-  position: relative;
+.court-wrap { width: min(100%, 520px); margin: 0 auto; }
+
+.court-mini { width: 100%; }
+
+.net {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 28px;
+  gap: 4px;
 }
 
-.court-mini { width: min(81.8%, 426px); }
+.mesh {
+  flex: 1;
+  height: 18px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.8) 0 2px, transparent 2px 9px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.75) 0 2px, transparent 2px 7px);
+  border-top: 3px solid #fff;
+}
 
-.net-svg {
-  display: block;
-  width: 122.2%;
-  margin-left: -11.1%;
-  height: auto;
-  pointer-events: none;
-  filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.28));
+.antenna {
+  width: 6px;
+  height: 34px;
+  border-radius: 4px;
+  background: repeating-linear-gradient(#fff 0 6px, #e11d48 6px 12px);
 }
 
 .court {
   position: relative;
-  z-index: 1;
   aspect-ratio: 1 / 1.16;
-  border-radius: 3px;
+  border-radius: 8px 8px 22px 22px;
   overflow: hidden;
-  background: #b99262;
-  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.38);
-}
-
-.floor {
-  position: absolute;
-  inset: 0;
-  background-color: #d7b98a;
-  background-image:
-    repeating-linear-gradient(
-      180deg,
-      rgba(255, 248, 230, 0.04) 0 2px,
-      rgba(120, 78, 40, 0.035) 2px 3px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      #ead4aa 0 13px,
-      rgba(130, 86, 44, 0.28) 13px 14px,
-      #d2ae78 14px 15px,
-      #f3e0bc 15px 29px,
-      rgba(120, 78, 40, 0.22) 29px 30px,
-      #e6c896 30px 44px
-    );
-}
-
-.floor::after {
-  content: "";
-  position: absolute;
-  inset: 0;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 18%),
-    radial-gradient(80% 70% at 50% 40%, rgba(255, 255, 255, 0.06), transparent 62%);
-  pointer-events: none;
-}
-
-.court-lines {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.boundary {
-  position: absolute;
-  inset: 0 0 3.5% 0;
-  border: 3px solid rgba(255, 255, 255, 0.94);
-  border-top-width: 4px;
+    radial-gradient(120% 70% at 50% 0%, rgba(255, 255, 255, 0.2), transparent 40%),
+    linear-gradient(180deg, var(--court-1), var(--court-2) 58%, var(--court-3));
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.92),
+    var(--shadow),
+    inset 0 0 60px rgba(0, 0, 0, 0.18);
 }
 
 .attack-line {
   position: absolute;
-  left: 0;
-  right: 0;
+  left: 5%;
+  right: 5%;
   top: 37.5%;
   border-top: 3px solid rgba(255, 255, 255, 0.92);
   z-index: 2;
@@ -426,8 +399,7 @@ button { cursor: pointer; }
   top: 4px;
   font-size: 0.68rem;
   letter-spacing: 0.08em;
-  color: rgba(48, 28, 14, 0.72);
-  font-weight: 700;
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .row-label {
@@ -509,9 +481,12 @@ button { cursor: pointer; }
 
 .zone.back .zone-stack { inset: 10px 6px 22px; }
 
+.court-mini .net { height: 16px; }
+.court-mini .antenna { height: 20px; }
+.court-mini .mesh { height: 12px; }
 .court-mini .attack-line span, .court-mini .chip-face::before { display: none; }
-.court-mini .court { box-shadow: 0 8px 16px rgba(0, 0, 0, 0.28); }
-.court-mini .boundary, .court-mini .attack-line { border-width: 2px; }
+.court-mini .court { box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9), 0 10px 20px rgba(0, 0, 0, 0.28); }
+.court-mini .attack-line { border-width: 2px; }
 .court-mini .chip-face { width: 30px; height: 30px; border-width: 2px; }
 .court-mini .chip-id { font-size: 0.62rem; }
 .court-mini .token.is-ghost .chip-face { width: 34px; height: 34px; }
